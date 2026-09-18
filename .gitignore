@@ -32,3 +32,7 @@ account_tracker*.xlsx
 .idea/
 .DS_Store
 Thumbs.db
+
+# Generated build assets
+.build-venv/
+assets/sam.ico
