@@ -7,97 +7,60 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="startup-splash" id="startup-splash" aria-live="polite">
-    <div class="splash-backdrop-grid" aria-hidden="true"></div>
-    <div class="splash-backdrop-vignette" aria-hidden="true"></div>
+  <div class="startup-splash pywebview-drag-region" id="startup-splash" aria-live="polite">
+    <section class="fatality-splash" aria-label="SAM startup">
+      <div class="fatality-accent"></div>
 
-    <section class="loader-shell" aria-label="SAM startup">
-      <div class="loader-accent"></div>
-
-      <header class="loader-titlebar">
-        <div class="loader-brand">
-          <div class="loader-logo"><svg class="sam-logo" viewBox="0 0 32 32" aria-hidden="true"><path class="sam-logo-main" d="M4.5 26 13.2 6h5.6l8.7 20h-5.6l-1.8-4.3h-8.2L10.1 26H4.5Zm9.1-8.8h4.8L16 11.4l-2.4 5.8Z"/><path class="sam-logo-accent" d="M12.8 21.7 16 14l3.2 7.7h-6.4Z"/></svg></div>
-          <div class="loader-brand-copy">
-            <div class="loader-wordmark glitch-word" data-text="SAM">SAM</div>
-            <div class="loader-tagline">STEAM ACCOUNT MANAGER</div>
-          </div>
-        </div>
-
-        <div class="loader-build">
-          <span>BUILD</span>
-          <strong>0.5.3</strong>
+      <header class="fatality-header">
+        <div class="fatality-wordmark" data-text="SAM">SAM</div>
+        <div class="fatality-header-right">
+          <span>Steam Account Manager</span>
+          <div class="fatality-avatar">S</div>
         </div>
       </header>
 
-      <div class="loader-main">
-        <section class="loader-panel loader-product">
-          <div class="loader-panel-head">
-            <span>ACCOUNT CONTROL</span>
-            <span class="loader-online"><i></i>LOCAL</span>
-          </div>
-
-          <div class="loader-product-lockup">
-            <div class="loader-product-icon"><svg class="sam-logo" viewBox="0 0 32 32" aria-hidden="true"><path class="sam-logo-main" d="M4.5 26 13.2 6h5.6l8.7 20h-5.6l-1.8-4.3h-8.2L10.1 26H4.5Zm9.1-8.8h4.8L16 11.4l-2.4 5.8Z"/><path class="sam-logo-accent" d="M12.8 21.7 16 14l3.2 7.7h-6.4Z"/></svg></div>
+      <main class="fatality-body">
+        <section class="fatality-panel splash-product-panel">
+          <div class="fatality-panel-title">
+            <div class="splash-product-icon">S</div>
             <div>
               <strong>Steam Account Manager</strong>
-              <span>DESKTOP CONTROL CLIENT</span>
+              <span id="splash-account-summary">Accounts: —</span>
             </div>
           </div>
 
-          <div class="loader-product-card">
-            <i class="loader-product-accent"></i>
-            <div class="loader-product-row">
-              <span>Runtime</span>
-              <strong id="splash-runtime">READY</strong>
-            </div>
-            <div class="loader-product-row">
-              <span>Accounts</span>
-              <strong id="splash-account-count">—</strong>
-            </div>
-            <div class="loader-product-row">
-              <span>Credential store</span>
-              <strong>WINDOWS</strong>
-            </div>
-          </div>
-
-          <div class="loader-meta-grid">
-            <div><span>MODE</span><strong>LOCAL</strong></div>
-            <div><span>CHANNEL</span><strong>STABLE</strong></div>
-          </div>
-        </section>
-
-        <section class="loader-panel loader-process">
-          <div class="loader-panel-head">
-            <span>INITIALIZATION</span>
-            <strong id="splash-percent">08%</strong>
-          </div>
-
-          <div class="loader-stage-list" id="splash-stage-list">
-            <div class="loader-stage current" data-splash-stage="0"><i></i><span>Starting SAM runtime</span><em>RUN</em></div>
-            <div class="loader-stage" data-splash-stage="1"><i></i><span>Connecting local bridge</span><em>WAIT</em></div>
-            <div class="loader-stage" data-splash-stage="2"><i></i><span>Opening account database</span><em>WAIT</em></div>
-            <div class="loader-stage" data-splash-stage="3"><i></i><span>Loading account library</span><em>WAIT</em></div>
-            <div class="loader-stage" data-splash-stage="4"><i></i><span>Preparing Steam metadata</span><em>WAIT</em></div>
-            <div class="loader-stage" data-splash-stage="5"><i></i><span>Finalizing interface</span><em>WAIT</em></div>
-          </div>
-
-          <div class="loader-progress-wrap">
-            <div class="loader-progress-track">
-              <i id="splash-progress-fill"></i>
-              <b id="splash-progress-head"></b>
-            </div>
-            <div class="loader-progress-meta">
-              <span id="splash-status">INITIALIZING</span>
-              <span id="splash-detail">SAM // LOCAL</span>
+          <div class="splash-product-body">
+            <div class="splash-product-card">
+              <i></i>
+              <div class="splash-product-card-copy">
+                <strong>SAM desktop</strong>
+                <div><span>Status:</span><b id="splash-runtime-status">Starting</b></div>
+              </div>
+              <span class="splash-version">v0.5.4</span>
             </div>
           </div>
         </section>
-      </div>
 
-      <footer class="loader-footer">
-        <span><i></i>SAM SERVICES</span>
-        <span>LOCAL SESSION // <strong id="splash-session">BOOT</strong></span>
-      </footer>
+        <section class="fatality-right-column">
+          <section class="fatality-panel splash-progress-panel">
+            <div class="fatality-section-head">Startup</div>
+            <div class="splash-log">
+              <div class="splash-log-line done" data-splash-line="0"><span>•</span><em>initializing runtime</em></div>
+              <div class="splash-log-line" data-splash-line="1"><span>•</span><em>connecting local bridge</em></div>
+              <div class="splash-log-line" data-splash-line="2"><span>•</span><em>opening account database</em></div>
+              <div class="splash-log-line" data-splash-line="3"><span>•</span><em>loading account library</em></div>
+              <div class="splash-log-line" data-splash-line="4"><span>•</span><em>preparing interface</em></div>
+            </div>
+          </section>
+
+          <section class="fatality-panel splash-info-panel">
+            <div><span>Status:</span><strong id="splash-status">Initializing</strong></div>
+            <div><span>Progress:</span><strong id="splash-percent">08%</strong></div>
+          </section>
+
+          <div class="splash-progress-track"><i id="splash-progress-fill"></i></div>
+        </section>
+      </main>
     </section>
   </div>
 
