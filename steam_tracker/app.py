@@ -45,6 +45,7 @@ class WebApiBridge:
 
     def get_state(self): return self._controller.get_state()
     def startup_refresh(self): return self._controller.startup_refresh()
+    def finish_startup(self): return self._controller.finish_startup()
     def add_account(self): return self._controller.add_account()
     def choose_bulk_login_file(self): return self._controller.choose_bulk_login_file()
     def get_bulk_login_status(self): return self._controller.get_bulk_login_status()
@@ -104,9 +105,9 @@ def main() -> int:
         "SAM — Steam Account Manager",
         url=url,
         js_api=WebApiBridge(controller),
-        width=1480,
-        height=900,
-        min_size=(1040, 700),
+        width=600,
+        height=380,
+        min_size=(600, 380),
         resizable=True,
         frameless=True,
         easy_drag=True,
