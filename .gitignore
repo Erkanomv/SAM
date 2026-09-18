@@ -1,0 +1,34 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Builds
+build/
+dist/
+*.spec
+
+# Local app/runtime data
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.sqlite3-*
+*.log
+webview/
+runtime/
+
+# Local credentials / import sources
+steam_accounts*.txt
+accounts*.txt
+account_tracker*.xlsx
+*.csv
+.env
+.env.*
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
