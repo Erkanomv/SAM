@@ -1,0 +1,5 @@
+pywebview>=6.0,<7
+httpx>=0.27,<1
+keyring>=25,<26
+psutil>=6,<8
+pyperclip>=1.9,<2
