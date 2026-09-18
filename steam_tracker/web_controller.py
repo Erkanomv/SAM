@@ -35,6 +35,7 @@ class WebController:
         self._lock = threading.RLock()
         self._refresh_lock = threading.Lock()
         self._startup_started = False
+        self._startup_expanded = False
         self._is_maximized = False
         self._bulk_lock = threading.RLock()
         self._bulk_pending: list[BulkCredential] = []
@@ -171,7 +172,7 @@ class WebController:
         except Exception:
             steam_path = ""
         return {
-            "version": "0.5.3",
+            "version": "0.5.4",
             "accounts": accounts,
             "apiKeyConfigured": bool(self.secrets.get_api_key()),
             "dataModeText": "Web API key configured" if self.api.has_key() else "Public Steam data",
@@ -512,6 +513,51 @@ class WebController:
             pass
         self.db.delete_account(steam_id)
         return {"ok": True, "message": "Account removed from the tracker.", "state": self._state()}
+
+    def finish_startup(self):
+        """Expand the compact splash window into the full SAM interface."""
+        if not self._window:
+            return False
+        with self._lock:
+            if self._startup_expanded:
+                return True
+            self._startup_expanded = True
+
+        width, height = 1480, 900
+        try:
+            import webview
+            screens = list(getattr(webview, "screens", []) or [])
+            target = screens[0] if screens else None
+
+            # Prefer the screen that already contains the compact splash.
+            wx = int(getattr(self._window, "x", 0) or 0)
+            wy = int(getattr(self._window, "y", 0) or 0)
+            ww = int(getattr(self._window, "width", 600) or 600)
+            wh = int(getattr(self._window, "height", 380) or 380)
+            cx, cy = wx + ww // 2, wy + wh // 2
+            for screen in screens:
+                if screen.x <= cx < screen.x + screen.width and screen.y <= cy < screen.y + screen.height:
+                    target = screen
+                    break
+
+            self._window.resize(width, height)
+            if target is not None:
+                x = int(target.x + max(0, (target.width - width) // 2))
+                y = int(target.y + max(0, (target.height - height) // 2))
+                self._window.move(x, y)
+
+            # Restore the larger minimum size after the splash. WinForms exposes
+            # MinimumSize through the native window; failure here is harmless.
+            try:
+                native = self._window.native
+                size_type = native.MinimumSize.GetType()
+                native.MinimumSize = size_type(1040, 700)
+            except Exception:
+                pass
+            return True
+        except Exception:
+            # The UI is still usable even if a platform-specific resize fails.
+            return False
 
     def window_action(self, action: str):
         if not self._window:
