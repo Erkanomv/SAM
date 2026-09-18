@@ -36,7 +36,7 @@ class SteamApi:
         self._client = httpx.Client(
             timeout=httpx.Timeout(16.0, connect=8.0),
             headers={
-                "User-Agent": "SAM/0.5.1 (+Windows desktop app)",
+                "User-Agent": "SAM/0.5.2 (+Windows desktop app)",
                 "Accept-Language": "en-US,en;q=0.8",
             },
             follow_redirects=True,
