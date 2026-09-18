@@ -171,7 +171,7 @@ class WebController:
         except Exception:
             steam_path = ""
         return {
-            "version": "0.5.0",
+            "version": "0.5.1",
             "accounts": accounts,
             "apiKeyConfigured": bool(self.secrets.get_api_key()),
             "dataModeText": "Web API key configured" if self.api.has_key() else "Public Steam data",
