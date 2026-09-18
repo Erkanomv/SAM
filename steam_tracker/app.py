@@ -101,7 +101,7 @@ def main() -> int:
 
     url = f"http://127.0.0.1:{server.server_port}/index.html"
     window = webview.create_window(
-        "Steam Tracker",
+        "SAM — Steam Account Manager",
         url=url,
         js_api=WebApiBridge(controller),
         width=1480,
