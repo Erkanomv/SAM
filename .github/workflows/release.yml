@@ -20,10 +20,31 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-release:
-    name: Test, build, and release SAM
+  test:
+    name: Tests
     runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --disable-pip-version-check -r requirements.txt
+
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
+
+  release:
+    name: Windows build + GitHub Release
+    needs: test
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,16 +57,6 @@ jobs:
           python-version: "3.12"
           cache: pip
 
-      - name: Install dependencies
-        shell: pwsh
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pyinstaller
-
-      - name: Run tests
-        run: python -m unittest discover -s tests -v
-
       - name: Read SAM version
         id: version
         shell: pwsh
@@ -56,32 +67,61 @@ jobs:
           }
           $version = $matches[1]
           "version=$version" >> $env:GITHUB_OUTPUT
-          "tag=v$version-build.${{ github.run_number }}" >> $env:GITHUB_OUTPUT
-          "asset=SAM-v$version-build.${{ github.run_number }}-windows-x64.zip" >> $env:GITHUB_OUTPUT
+          "tag=v$version" >> $env:GITHUB_OUTPUT
+          Write-Host "Building SAM v$version"
+
+      - name: Check whether this version is already released
+        id: existing
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          gh release view "$env:TAG" *> $null
+          if ($LASTEXITCODE -eq 0) {
+            "exists=true" >> $env:GITHUB_OUTPUT
+            Write-Host "Release $env:TAG already exists. Bump __version__ for the next release."
+          } else {
+            "exists=false" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Install build dependencies
+        if: steps.existing.outputs.exists != 'true'
+        shell: pwsh
+        run: |
+          python -m pip install --disable-pip-version-check -r requirements.txt pyinstaller
 
       - name: Build Windows app
+        if: steps.existing.outputs.exists != 'true'
+        shell: pwsh
         run: python -m PyInstaller --noconfirm --clean SAM.spec
 
       - name: Verify build
+        if: steps.existing.outputs.exists != 'true'
         shell: pwsh
         run: |
           if (!(Test-Path "dist\SAM\SAM.exe")) {
             throw "dist\SAM\SAM.exe was not produced."
           }
 
-      - name: Package build
+      - name: Package Windows build
+        if: steps.existing.outputs.exists != 'true'
         shell: pwsh
         env:
-          ASSET: ${{ steps.version.outputs.asset }}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          Compress-Archive -Path "dist\SAM\*" -DestinationPath "$env:ASSET" -Force
+          $zip = "SAM-v$env:VERSION-windows-x64.zip"
+          Compress-Archive -Path "dist\SAM\*" -DestinationPath $zip -Force
+          "asset=$zip" >> $env:GITHUB_ENV
 
       - name: Create GitHub Release
+        if: steps.existing.outputs.exists != 'true'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.version.outputs.tag }}
-          ASSET: ${{ steps.version.outputs.asset }}
           VERSION: ${{ steps.version.outputs.version }}
         run: |
-          gh release create "$env:TAG" "$env:ASSET" --target "${{ github.sha }}" --title "SAM v$env:VERSION build ${{ github.run_number }}" --generate-notes --latest
+          git tag "$env:TAG"
+          git push origin "$env:TAG"
+          gh release create "$env:TAG" "$env:asset" --title "SAM v$env:VERSION" --generate-notes
