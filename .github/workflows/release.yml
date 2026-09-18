@@ -9,6 +9,7 @@ on:
       - "requirements.txt"
       - "SAM.spec"
       - "build_exe.bat"
+      - "tools/**"
       - ".github/workflows/release.yml"
   workflow_dispatch:
 
@@ -101,7 +102,11 @@ jobs:
         if: steps.existing.outputs.exists != 'true'
         shell: pwsh
         run: |
-          python -m pip install --disable-pip-version-check -r requirements.txt pyinstaller
+          python -m pip install --disable-pip-version-check -r requirements.txt pyinstaller pillow
+
+      - name: Generate Windows icon
+        if: steps.existing.outputs.exists != 'true'
+        run: python tools/build_icon.py
 
       - name: Build Windows app
         if: steps.existing.outputs.exists != 'true'
