@@ -4,7 +4,7 @@ A Windows desktop Steam account manager focused on fast account switching, clean
 
 ## Current version
 
-**v0.5.0**
+**v0.5.1**
 
 ## Features
 
@@ -12,7 +12,7 @@ A Windows desktop Steam account manager focused on fast account switching, clean
 - Steam profile, avatar, game library and playtime display
 - Most-played game artwork and compact account cards
 - Manual `VCBND` / `UNBND` countdown status per account
-- Per-account `COMP` toggle with its own card status and filter
+- Per-account `COMP` toggle shown alongside `VCBND` / `UNBND`, with its own filter
 - Search, sorting, favorites and status filters
 - Favorites use a filled red heart and stay pinned at the top by default
 - One-click local Steam account switching
@@ -21,6 +21,7 @@ A Windows desktop Steam account manager focused on fast account switching, clean
 - Background profile/library refresh after successful bulk additions
 - SQLite local cache for account metadata and libraries
 - HTML/CSS/JS interface hosted in WebView2 via pywebview
+- Lightweight SAM startup splash while the native bridge/account cache initializes
 - Shared Python runtime for faster launches between updates
 
 ## Requirements
