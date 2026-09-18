@@ -3,15 +3,28 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Steam Tracker</title>
+  <title>SAM — Steam Account Manager</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <div class="startup-splash" id="startup-splash" aria-live="polite">
+    <div class="splash-noise" aria-hidden="true"></div>
+    <div class="splash-center">
+      <div class="splash-logo"><svg class="sam-logo" viewBox="0 0 32 32" aria-hidden="true"><path class="sam-logo-main" d="M4.5 26 13.2 6h5.6l8.7 20h-5.6l-1.8-4.3h-8.2L10.1 26H4.5Zm9.1-8.8h4.8L16 11.4l-2.4 5.8Z"/><path class="sam-logo-accent" d="M12.8 21.7 16 14l3.2 7.7h-6.4Z"/></svg></div>
+      <div class="splash-wordmark">SAM</div>
+      <div class="splash-subtitle">STEAM ACCOUNT MANAGER</div>
+      <div class="splash-progress"><i id="splash-progress-fill"></i></div>
+      <div class="splash-progress-meta"><span id="splash-status">INITIALIZING</span><span id="splash-percent">8%</span></div>
+    </div>
+    <div class="splash-corner splash-corner-left">ACCOUNT CONTROL // LOCAL</div>
+    <div class="splash-corner splash-corner-right">v0.5.1</div>
+  </div>
+
   <div class="app-shell">
     <header class="titlebar">
       <div class="titlebar-left pywebview-drag-region">
-        <div class="window-mark" aria-hidden="true">ST</div>
-        <span class="window-title">Steam Tracker</span>
+        <div class="window-mark" aria-hidden="true"><svg class="sam-logo" viewBox="0 0 32 32" aria-hidden="true"><path class="sam-logo-main" d="M4.5 26 13.2 6h5.6l8.7 20h-5.6l-1.8-4.3h-8.2L10.1 26H4.5Zm9.1-8.8h4.8L16 11.4l-2.4 5.8Z"/><path class="sam-logo-accent" d="M12.8 21.7 16 14l3.2 7.7h-6.4Z"/></svg></div>
+        <span class="window-title">SAM</span>
       </div>
       <div class="titlebar-drag pywebview-drag-region" aria-hidden="true"></div>
       <div class="window-controls" aria-label="Window controls">
@@ -30,10 +43,10 @@
 
     <nav class="topbar">
       <div class="brand-block">
-        <div class="brand-mark">ST</div>
+        <div class="brand-mark"><svg class="sam-logo" viewBox="0 0 32 32" aria-hidden="true"><path class="sam-logo-main" d="M4.5 26 13.2 6h5.6l8.7 20h-5.6l-1.8-4.3h-8.2L10.1 26H4.5Zm9.1-8.8h4.8L16 11.4l-2.4 5.8Z"/><path class="sam-logo-accent" d="M12.8 21.7 16 14l3.2 7.7h-6.4Z"/></svg></div>
         <div class="brand-copy">
-          <strong>Steam Tracker</strong>
-          <span id="account-summary">No accounts linked</span>
+          <strong>SAM</strong>
+          <span>Steam Account Manager · <span id="account-summary">No accounts linked</span></span>
         </div>
       </div>
 
@@ -106,7 +119,7 @@
       <section class="cards-wrap">
         <div class="account-grid" id="account-grid"></div>
         <div class="empty-state hidden" id="empty-state">
-          <div class="empty-mark">ST</div>
+          <div class="empty-mark">SAM</div>
           <h2 id="empty-title">No accounts yet</h2>
           <p id="empty-copy">Link a Steam account to start building your library.</p>
           <button class="primary-action compact" id="empty-add-btn">Add your first account</button>
