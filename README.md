@@ -4,7 +4,7 @@ A Windows desktop Steam account manager focused on fast account switching, clean
 
 ## Current version
 
-**v0.5.2**
+**v0.5.3**
 
 ## Features
 
