@@ -13,14 +13,14 @@ if not exist "%PY%" (
 )
 
 echo [SAM] Installing/updating build dependencies...
-"%PY%" -m pip install --disable-pip-version-check --upgrade -r requirements.txt pyinstaller
+"%PY%" -m pip install --disable-pip-version-check --upgrade -r requirements.txt pyinstaller pillow
 if errorlevel 1 goto :build_error
 
 echo [SAM] Running tests...
 "%PY%" -m unittest discover -s tests -v
 if errorlevel 1 goto :test_error
 
-echo [SAM] Building Windows app...
+echo [SAM] Generating Windows icon...\n"%PY%" tools\\build_icon.py\nif errorlevel 1 goto :build_error\n\necho [SAM] Building Windows app...
 if exist build rmdir /s /q build
 if exist dist\SAM rmdir /s /q dist\SAM
 "%PY%" -m PyInstaller --noconfirm --clean SAM.spec
