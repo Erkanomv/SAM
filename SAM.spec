@@ -1,21 +1,30 @@
 # -*- mode: python ; coding: utf-8 -*-
-from pathlib import Path
-from PyInstaller.utils.hooks import collect_all
 
-project = Path(SPECPATH)
-datas = [(str(project / "steam_tracker" / "web"), "steam_tracker/web")]
-binaries = []
-hiddenimports = []
+from PyInstaller.utils.hooks import collect_all, collect_submodules
 
-for package in ("webview", "keyring"):
-    pkg_datas, pkg_bins, pkg_hidden = collect_all(package)
-    datas += pkg_datas
-    binaries += pkg_bins
-    hiddenimports += pkg_hidden
+webview_datas, webview_binaries, webview_hidden = collect_all("webview")
+keyring_datas, keyring_binaries, keyring_hidden = collect_all("keyring")
+
+datas = webview_datas + keyring_datas + [
+    ("steam_tracker/web", "steam_tracker/web"),
+]
+binaries = webview_binaries + keyring_binaries
+hiddenimports = (
+    webview_hidden
+    + keyring_hidden
+    + collect_submodules("keyring.backends")
+    + collect_submodules("clr_loader")
+    + collect_submodules("pythonnet")
+    + [
+        "webview.platforms.edgechromium",
+        "webview.platforms.winforms",
+        "win32ctypes",
+    ]
+)
 
 a = Analysis(
     ["app.py"],
-    pathex=[str(project)],
+    pathex=[],
     binaries=binaries,
     datas=datas,
     hiddenimports=hiddenimports,
@@ -37,7 +46,7 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    upx=False,
     console=False,
     disable_windowed_traceback=False,
 )
@@ -47,7 +56,7 @@ coll = COLLECT(
     a.binaries,
     a.datas,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     name="SAM",
 )
