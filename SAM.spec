@@ -49,6 +49,7 @@ exe = EXE(
     upx=False,
     console=False,
     disable_windowed_traceback=False,
+    icon="assets/sam.ico",
 )
 
 coll = COLLECT(
