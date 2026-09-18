@@ -41,6 +41,9 @@ jobs:
       - name: Run tests
         run: python -m unittest discover -s tests -v
 
+      - name: Check frontend JavaScript
+        run: node --check steam_tracker/web/app.js
+
   release:
     name: Windows build + GitHub Release
     needs: test
