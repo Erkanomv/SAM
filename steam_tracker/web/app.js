@@ -3,7 +3,7 @@
 
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-  const state = { accounts: [], version: '0.5.3', apiKeyConfigured: false, dataModeText: 'Public Steam data', steamInstalled: true, bulkLoginActive: false };
+  const state = { accounts: [], version: '0.5.4', apiKeyConfigured: false, dataModeText: 'Public Steam data', steamInstalled: true, bulkLoginActive: false };
   const ui = {
     filter: localStorage.getItem('sam.filter') || 'ALL',
     sort: localStorage.getItem('sam.sort') || 'Favorite',
@@ -46,87 +46,71 @@
   const splashStartedAt = performance.now();
   const SPLASH_MIN_MS = 4000;
   let splashReady = false;
-  let splashActualReady = false;
-  let splashLastStage = 0;
 
-  function setSplash(progress, label, detail = '') {
-    const splash = $('#startup-splash');
-    if (!splash) return;
+  function setSplash(progress, label) {
     const value = Math.max(8, Math.min(100, Math.round(Number(progress) || 8)));
     const fill = $('#splash-progress-fill');
-    const head = $('#splash-progress-head');
     if (fill) fill.style.width = `${value}%`;
-    if (head) head.style.left = `calc(${value}% - 2px)`;
     if ($('#splash-percent')) $('#splash-percent').textContent = `${String(value).padStart(2, '0')}%`;
-    if (label && $('#splash-status')) $('#splash-status').textContent = String(label).toUpperCase();
-    if (detail && $('#splash-detail')) $('#splash-detail').textContent = String(detail).toUpperCase();
+    if (label && $('#splash-status')) $('#splash-status').textContent = String(label);
   }
 
-  function setSplashStage(index, progress, label, detail = '') {
-    splashLastStage = Math.max(splashLastStage, index);
-    $$('.loader-stage').forEach((row, i) => {
+  function setSplashLine(index, progress, label) {
+    $$('.splash-log-line').forEach((row, i) => {
       row.classList.toggle('done', i < index);
       row.classList.toggle('current', i === index);
-      const status = $('em', row);
-      if (status) status.textContent = i < index ? 'OK' : (i === index ? 'RUN' : 'WAIT');
     });
-    setSplash(progress, label, detail);
+    setSplash(progress, label);
   }
 
   function runSplashSequence() {
-    const stages = [
-      [120, 0, 10, 'Bootstrapping', 'SAM // RUNTIME'],
-      [620, 1, 24, 'Connecting bridge', 'PYTHON // WEBVIEW2'],
-      [1320, 2, 39, 'Opening database', 'SQLITE // WAL'],
-      [2050, 3, 57, 'Reading account index', 'LOCAL // CACHE'],
-      [2780, 4, 74, 'Preparing Steam data', 'STEAM // PROFILE'],
-      [3400, 5, 89, 'Finalizing interface', 'WEBVIEW2 // UI'],
+    const sequence = [
+      [180, 0, 12, 'Starting'],
+      [850, 1, 29, 'Connecting'],
+      [1650, 2, 48, 'Opening database'],
+      [2450, 3, 67, 'Loading accounts'],
+      [3250, 4, 86, 'Preparing UI'],
     ];
-    for (const [delay, stage, progress, label, detail] of stages) {
+    for (const [delay, line, progress, label] of sequence) {
       setTimeout(() => {
-        if (!splashReady) setSplashStage(stage, progress, label, detail);
+        if (!splashReady) setSplashLine(line, progress, label);
       }, delay);
     }
   }
 
   function updateSplashAccountCount(count) {
-    const el = $('#splash-account-count');
-    if (!el) return;
     const n = Number(count || 0);
-    el.textContent = n.toLocaleString();
+    if ($('#splash-account-summary')) $('#splash-account-summary').textContent = `Accounts: ${n.toLocaleString()}`;
   }
 
-  function markSplashActualReady() {
-    splashActualReady = true;
-    updateSplashAccountCount(state.accounts.length);
-    const session = $('#splash-session');
-    if (session) session.textContent = state.accounts.length ? `${state.accounts.length} ACCOUNTS` : 'READY';
-  }
-
-  function dismissSplash() {
+  async function dismissSplash() {
     const splash = $('#startup-splash');
     if (!splash || splash.classList.contains('done')) return;
 
-    markSplashActualReady();
     const elapsed = performance.now() - splashStartedAt;
-    const readyDelay = Math.max(0, SPLASH_MIN_MS - elapsed - 300);
+    const readyDelay = Math.max(0, SPLASH_MIN_MS - elapsed - 260);
     const closeDelay = Math.max(0, SPLASH_MIN_MS - elapsed);
 
     setTimeout(() => {
       splashReady = true;
-      $$('.loader-stage').forEach(row => {
+      $$('.splash-log-line').forEach(row => {
         row.classList.add('done');
         row.classList.remove('current');
-        const status = $('em', row);
-        if (status) status.textContent = 'OK';
       });
-      setSplash(100, 'Session ready', state.accounts.length ? `${state.accounts.length} ACCOUNTS LOADED` : 'NO ACCOUNTS LINKED');
-      splash.classList.add('ready');
+      setSplash(100, 'Ready');
+      const runtime = $('#splash-runtime-status');
+      if (runtime) {
+        runtime.textContent = 'Ready';
+        runtime.classList.add('ready');
+      }
     }, readyDelay);
 
-    setTimeout(() => {
-      splash.classList.add('done');
-      setTimeout(() => splash.remove(), 420);
+    setTimeout(async () => {
+      try { await native('finish_startup'); } catch {}
+      setTimeout(() => {
+        splash.classList.add('done');
+        setTimeout(() => splash.remove(), 280);
+      }, 160);
     }, closeDelay);
   }
 
@@ -564,9 +548,9 @@
 
       dismissSplash();
     } catch (e) {
-      splashActualReady = true;
-      setSplash(100, 'Startup error', 'CHECK LOGS');
-      $('#startup-splash')?.classList.add('error');
+      setSplash(100, 'Startup error');
+      const runtime = $('#splash-runtime-status');
+      if (runtime) runtime.textContent = 'Error';
       toast(`Startup failed: ${e.message || e}`, 'error');
       setTimeout(dismissSplash, 700);
     }
