@@ -3,7 +3,7 @@
 
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-  const state = { accounts: [], version: '0.5.0', apiKeyConfigured: false, dataModeText: 'Public Steam data', steamInstalled: true, bulkLoginActive: false };
+  const state = { accounts: [], version: '0.5.1', apiKeyConfigured: false, dataModeText: 'Public Steam data', steamInstalled: true, bulkLoginActive: false };
   const ui = {
     filter: localStorage.getItem('sam.filter') || 'ALL',
     sort: localStorage.getItem('sam.sort') || 'Favorite',
@@ -29,7 +29,7 @@
     return `${n >= 100 ? Math.round(n) : n.toFixed(1)} h`;
   };
   const isVcbnd = a => Number(a.vcbndUntil || 0) > Date.now() / 1000;
-  const accountStatus = a => a.comp ? 'COMP' : (isVcbnd(a) ? 'VCBND' : 'UNBND');
+  const accountStatus = a => isVcbnd(a) ? 'VCBND' : 'UNBND';
 
   function remaining(until) {
     let s = Math.max(0, Math.floor(Number(until || 0) - Date.now() / 1000));
@@ -40,6 +40,30 @@
     if (d) return `${d}d ${h}h ${m}m`;
     if (h) return `${h}h ${m}m`;
     return `${m}m`;
+  }
+
+
+  const splashStartedAt = performance.now();
+
+  function setSplash(progress, label) {
+    const splash = $('#startup-splash');
+    if (!splash) return;
+    const value = Math.max(8, Math.min(100, Math.round(Number(progress) || 8)));
+    $('#splash-progress-fill').style.width = `${value}%`;
+    $('#splash-percent').textContent = `${value}%`;
+    if (label) $('#splash-status').textContent = String(label).toUpperCase();
+  }
+
+  function dismissSplash() {
+    const splash = $('#startup-splash');
+    if (!splash || splash.classList.contains('done')) return;
+    setSplash(100, 'READY');
+    const elapsed = performance.now() - splashStartedAt;
+    const wait = Math.max(0, 620 - elapsed);
+    setTimeout(() => {
+      splash.classList.add('done');
+      setTimeout(() => splash.remove(), 320);
+    }, wait);
   }
 
   async function native(method, ...args) {
@@ -80,6 +104,7 @@
   function cardHtml(a) {
     const st = accountStatus(a);
     const vcb = isVcbnd(a);
+    const comp = !!a.comp;
     const games = Array.isArray(a.topGames) ? a.topGames : [];
     const top = games[0] || {};
     const hero = safeUrl(top.header_url);
@@ -118,10 +143,13 @@
             <div class="stat-box"><span class="stat-label">TOTAL PLAYTIME</span><strong class="stat-value">${fmtHours(a.totalHours)}</strong></div>
           </div>
 
-          <div class="status-row" data-timer-until="${Number(a.vcbndUntil || 0)}" data-comp="${a.comp ? '1' : '0'}">
-            <span class="status-label">${st === 'VCBND' ? 'VCBND TIMER' : 'ACCOUNT STATUS'}</span>
-            <span class="status-remaining">${st === 'VCBND' ? remaining(a.vcbndUntil) : ''}</span>
-            <strong class="status-value ${st.toLowerCase()}">${st}</strong>
+          <div class="status-row" data-timer-until="${Number(a.vcbndUntil || 0)}" data-comp="${comp ? '1' : '0'}">
+            <span class="status-label">${vcb ? 'VCBND TIMER' : 'ACCOUNT STATUS'}</span>
+            <span class="status-remaining">${vcb ? remaining(a.vcbndUntil) : ''}</span>
+            <span class="status-badges">
+              <strong class="status-value ${st.toLowerCase()}">${st}</strong>
+              ${comp ? '<strong class="status-value comp">COMP</strong>' : ''}
+            </span>
           </div>
 
           <div class="library-block">
@@ -142,7 +170,8 @@
   function visibleAccounts() {
     const q = ui.query.trim().toLowerCase();
     let items = state.accounts.filter(a => {
-      if (ui.filter !== 'ALL' && accountStatus(a) !== ui.filter) return false;
+      if (ui.filter === 'COMP' && !a.comp) return false;
+      if (ui.filter !== 'ALL' && ui.filter !== 'COMP' && accountStatus(a) !== ui.filter) return false;
       if (q) {
         const hay = `${a.personaName || ''} ${a.steamId || ''} ${a.loginUsername || ''}`.toLowerCase();
         if (!hay.includes(q)) return false;
@@ -162,7 +191,7 @@
 
   function render() {
     const all = state.accounts.length;
-    const comp = state.accounts.filter(a => accountStatus(a) === 'COMP').length;
+    const comp = state.accounts.filter(a => !!a.comp).length;
     const vcb = state.accounts.filter(a => accountStatus(a) === 'VCBND').length;
     const unb = state.accounts.filter(a => accountStatus(a) === 'UNBND').length;
     const shown = visibleAccounts();
@@ -455,16 +484,25 @@
 
   async function load() {
     try {
+      setSplash(24, 'Connecting local backend');
       const next = await native('get_state');
+      setSplash(58, 'Loading accounts');
       applyState(next);
+
       native('startup_refresh').catch(() => {});
+
       try {
         bulk = await native('get_bulk_login_status');
         state.bulkLoginActive = !!bulk?.active;
         render();
       } catch {}
+
+      setSplash(86, state.accounts.length ? `Loaded ${state.accounts.length} accounts` : 'Account manager ready');
+      dismissSplash();
     } catch (e) {
+      setSplash(100, 'Startup error');
       toast(`Startup failed: ${e.message || e}`, 'error');
+      setTimeout(dismissSplash, 450);
     }
   }
 
