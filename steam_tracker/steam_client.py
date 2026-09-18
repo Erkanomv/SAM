@@ -41,7 +41,7 @@ class LoginUser:
 def parse_bulk_credentials(text: str, *, max_accounts: int = 500) -> tuple[list[BulkCredential], list[str]]:
     credentials: list[BulkCredential] = []
     issues: list[str] = []
-    seen: set[str] = []
+    seen: set[str] = set()
 
     for line_number, raw in enumerate((text or "").splitlines(), 1):
         line = raw.lstrip("\ufeff") if line_number == 1 else raw
