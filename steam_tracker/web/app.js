@@ -3,7 +3,7 @@
 
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-  const state = { accounts: [], version: '0.5.1', apiKeyConfigured: false, dataModeText: 'Public Steam data', steamInstalled: true, bulkLoginActive: false };
+  const state = { accounts: [], version: '0.5.2', apiKeyConfigured: false, dataModeText: 'Public Steam data', steamInstalled: true, bulkLoginActive: false };
   const ui = {
     filter: localStorage.getItem('sam.filter') || 'ALL',
     sort: localStorage.getItem('sam.sort') || 'Favorite',
@@ -44,6 +44,8 @@
 
 
   const splashStartedAt = performance.now();
+  const SPLASH_MIN_MS = 4000;
+  let splashReady = false;
 
   function setSplash(progress, label) {
     const splash = $('#startup-splash');
@@ -54,17 +56,40 @@
     if (label) $('#splash-status').textContent = String(label).toUpperCase();
   }
 
+  function runSplashSequence() {
+    const stages = [
+      [420, 18, 'Starting local runtime'],
+      [1100, 34, 'Connecting backend'],
+      [1900, 53, 'Reading account cache'],
+      [2750, 72, 'Preparing Steam data'],
+      [3450, 88, 'Finalizing interface'],
+    ];
+    for (const [delay, progress, label] of stages) {
+      setTimeout(() => {
+        if (!splashReady) setSplash(progress, label);
+      }, delay);
+    }
+  }
+
   function dismissSplash() {
     const splash = $('#startup-splash');
     if (!splash || splash.classList.contains('done')) return;
-    setSplash(100, 'READY');
+
     const elapsed = performance.now() - splashStartedAt;
-    const wait = Math.max(0, 620 - elapsed);
+    const finishAt = Math.max(0, SPLASH_MIN_MS - elapsed - 260);
+
+    setTimeout(() => {
+      splashReady = true;
+      setSplash(100, 'Ready');
+    }, finishAt);
+
     setTimeout(() => {
       splash.classList.add('done');
       setTimeout(() => splash.remove(), 320);
-    }, wait);
+    }, Math.max(0, SPLASH_MIN_MS - elapsed));
   }
+
+  runSplashSequence();
 
   async function native(method, ...args) {
     if (!window.pywebview?.api?.[method]) throw new Error(`Native API unavailable: ${method}`);
@@ -484,9 +509,7 @@
 
   async function load() {
     try {
-      setSplash(24, 'Connecting local backend');
       const next = await native('get_state');
-      setSplash(58, 'Loading accounts');
       applyState(next);
 
       native('startup_refresh').catch(() => {});
@@ -497,7 +520,6 @@
         render();
       } catch {}
 
-      setSplash(86, state.accounts.length ? `Loaded ${state.accounts.length} accounts` : 'Account manager ready');
       dismissSplash();
     } catch (e) {
       setSplash(100, 'Startup error');
